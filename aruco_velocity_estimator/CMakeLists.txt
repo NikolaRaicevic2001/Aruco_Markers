@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(ArucoVelocityEstimator)
+project(aruco_velocity_estimator)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -12,6 +12,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(ros2_aruco_interfaces REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 
 # Install main Python scripts
 install(
@@ -20,6 +21,13 @@ install(
     scripts/ArucoVisualizer.py
   DESTINATION lib/${PROJECT_NAME}
 )
+
+# Messages
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/ArucoMarkersVelocity.msg"
+  DEPENDENCIES geometry_msgs
+  DEPENDENCIES std_msgs
+ )
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
