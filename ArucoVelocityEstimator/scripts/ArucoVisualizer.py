@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-from rclpy.node import Node
+from scipy.spatial.transform import Rotation as R
 from cv_bridge import CvBridge
+from rclpy.node import Node
 import numpy as np
 import rclpy
 import cv2
@@ -35,7 +36,7 @@ class ArucoVisualizer(Node):
         
         self.camera_info_sub = self.create_subscription(
             CameraInfo,
-            '/camera/camera_info',
+            '/camera/camera/color/camera_info',
             self.camera_info_callback,
             10)
 
@@ -48,26 +49,45 @@ class ArucoVisualizer(Node):
 
     def image_callback(self, msg):
         self.latest_image = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-
+     
     def aruco_callback(self, msg):
-        if self.latest_image is None:
+        if self.latest_image is None or self.camera_matrix is None:
             return
 
         image_with_markers = self.latest_image.copy()
 
         for i, marker_id in enumerate(msg.marker_ids):
-            # Extract pose information
             pose = msg.poses[i]
             position = pose.position
-            
-            # Project 3D point to 2D image plane (simplified)
-            # Note: This is a simplification and may not be accurate for all camera setups
-            x = int(position.x * 100 + image_with_markers.shape[1] / 2)
-            y = int(-position.y * 100 + image_with_markers.shape[0] / 2)
-            
-            # Draw marker on image
-            cv2.circle(image_with_markers, (x, y), 10, (0, 255, 0), -1)
-            cv2.putText(image_with_markers, f"ID: {marker_id}", (x+10, y+10),
+            orientation = pose.orientation
+            print("Aruco ID: ", marker_id)
+            print(f"Position: x={position.x}, y={position.y}, z={position.z}")
+            print(f"Orientation: orientation.x={pose.orientation.x}, orientation.y={pose.orientation.y}, orientation.z={pose.orientation.z}, orientation.w={pose.orientation.w}")
+
+            # Create 3D points for the marker corners (assuming a square marker)
+            marker_size = 0.05  # Adjust this to your marker size in meters
+            object_points = np.array([
+                [-marker_size/2, -marker_size/2, 0],
+                [marker_size/2, -marker_size/2, 0],
+                [marker_size/2, marker_size/2, 0],
+                [-marker_size/2, marker_size/2, 0]
+            ])
+
+            # Convert quaternion to rotation matrix
+            r = R.from_quat([orientation.x, orientation.y, orientation.z, orientation.w])
+            rvec, _ = cv2.Rodrigues(r.as_matrix())
+
+            tvec = np.array([position.x, position.y, position.z])
+
+            # Project 3D points to 2D image plane
+            image_points, _ = cv2.projectPoints(object_points, rvec, tvec, self.camera_matrix, self.dist_coeffs)
+
+            # Draw bounding box
+            image_points = image_points.reshape(-1, 2).astype(int)
+            cv2.polylines(image_with_markers, [image_points], True, (0, 255, 0), 2)
+
+            # Add marker ID text
+            cv2.putText(image_with_markers, f"ID: {marker_id}", tuple(image_points[0]), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
         # Publish the annotated image
