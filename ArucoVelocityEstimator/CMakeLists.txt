@@ -8,11 +8,16 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclpy REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(ros2_aruco_interfaces REQUIRED)
 
 # Install main Python scripts
 install(
   PROGRAMS 
     scripts/ArucoVelocityEstimator.py
+    scripts/ArucoVisualizer.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
