@@ -40,7 +40,9 @@ class ArucoVelocityEstimator(Node):
                 continue
             
             dt = (current_time - self.prev_time[marker_id]).nanoseconds / 1e9
-        
+            if dt == 0:
+                continue
+
             # Enter position values
             pose = Pose()
             pose.position.x = position.x
@@ -64,6 +66,7 @@ class ArucoVelocityEstimator(Node):
             self.get_logger().info(f"Aruco ID: {marker_id}")
             self.get_logger().info(f"Velocity: x={twist.linear.x:.2f}, y={twist.linear.y:.2f}, z={twist.linear.z:.2f}")
             self.get_logger().info(f"Position: x={position.x:.2f}, y={position.y:.2f}, z={position.z:.2f}")
+            self.get_logger().info(f"Frequency: {1/dt:.2f} hz")
 
         # Publish velocities for all markers
         if velocity_msg.marker_ids:
