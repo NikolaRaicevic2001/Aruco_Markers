@@ -1,4 +1,0 @@
-[submodule "ros2_aruco"]
-	path = ros2_aruco
-	url = https://github.com/JMU-ROBOTICS-VIVA/ros2_aruco.git
-	branch = main
