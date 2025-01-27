@@ -17,6 +17,7 @@ find_package(rosidl_default_generators REQUIRED)
 # Install main Python scripts
 install(
   PROGRAMS 
+    scripts/ArucoPointCloudMatch.py
     scripts/ArucoVelocityEstimator.py
     scripts/ArucoVisualizer.py
   DESTINATION lib/${PROJECT_NAME}
