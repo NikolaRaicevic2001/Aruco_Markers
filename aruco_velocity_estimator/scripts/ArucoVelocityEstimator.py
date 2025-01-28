@@ -43,10 +43,9 @@ class ArucoVelocityEstimator(Node):
             if dt < 1e-9:
                 continue
 
-            threshold = 1e-3
-            if ((position.x - self.prev_pose[marker_id].position.x) < threshold and
-               (position.y - self.prev_pose[marker_id].position.y) < threshold and
-               (position.z - self.prev_pose[marker_id].position.z) < threshold):       
+            if ((position.x - self.prev_pose[marker_id].position.x) < 1e-6 and
+               (position.y - self.prev_pose[marker_id].position.y) < 1e-6 and
+               (position.z - self.prev_pose[marker_id].position.z) < 1e-3):       
                 # Enter position values
                 pose = Pose()
                 pose.position.x = position.x
